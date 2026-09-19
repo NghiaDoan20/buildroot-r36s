@@ -22,6 +22,16 @@ jobs:
           sudo apt-get clean
           df -h
 
+      - name: Expand Swap Space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+
       - name: Install Buildroot host dependencies
         run: |
           sudo apt-get update
@@ -38,7 +48,12 @@ jobs:
           LANG: en_US.UTF-8
 
       - name: Compile Buildroot system
-        run: make -j$(nproc)
+        run: |
+          make BR2_JLEVEL=2 2>&1 | tee buildroot.log || {
+            echo "::error::Buildroot build failed. Last 150 lines of build.log:"
+            tail -n 150 buildroot.log
+            exit 1
+          }
         env:
           LC_ALL: en_US.UTF-8
           LANG: en_US.UTF-8

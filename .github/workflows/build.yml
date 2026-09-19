@@ -1,7 +1,7 @@
 name: Build R36S Buildroot OS
 
 on:
-  workflow_dispatch: # Allows manually triggering the build from the GitHub UI
+  workflow_dispatch:
   push:
     branches: [ main, master, r36s ]
 
@@ -12,28 +12,36 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Locales
+
+      - name: Free disk space on runner
         run: |
-          sudo apt-get update
-          sudo apt-get install -y locales
-          sudo locale-gen en_US.UTF-8
-          sudo update-locale LANG=en_US.UTF-8
-      
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo apt-get clean
+          df -h
+
       - name: Install Buildroot host dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential libncurses5-dev rsync cpio unzip \
-            bc locale-gen wget git python3 graphviz cvs \
-            subversion bzip2
+            build-essential libncurses-dev rsync cpio unzip \
+            bc file wget git python3 graphviz cvs subversion \
+            bzip2 locales
+          sudo locale-gen en_US.UTF-8
 
       - name: Load R36S configuration
-        run: |
-          make r36s_defconfig
+        run: make r36s_defconfig
+        env:
+          LC_ALL: en_US.UTF-8
+          LANG: en_US.UTF-8
 
       - name: Compile Buildroot system
-        run: |
-          make -j$(nproc)
+        run: make -j$(nproc)
+        env:
+          LC_ALL: en_US.UTF-8
+          LANG: en_US.UTF-8
 
       - name: Upload output firmware image artifacts
         uses: actions/upload-artifact@v4

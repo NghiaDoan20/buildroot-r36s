@@ -41,27 +41,7 @@ jobs:
             bzip2 locales mtools dosfstools
           sudo locale-gen en_US.UTF-8
 
-      # --- 1. CACHE DOWNLOADS & BUILT HOST TOOLCHAIN ---
-      - name: Cache Buildroot downloads and host tools
-        uses: actions/cache@v4
-        with:
-          path: |
-            dl
-            output/host
-          key: buildroot-${{ runner.os }}-${{ hashFiles('configs/r36s_defconfig') }}
-          restore-keys: |
-            buildroot-${{ runner.os }}-
-
-      # --- 2. OPTIMIZED CCACHE STEP ---
-      - name: Cache Compiler Output (ccache)
-        uses: actions/cache@v4
-        with:
-          path: ~/.ccache
-          key: ccache-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.ref_name }}-
-            ccache-${{ runner.os }}-
-
+      
       - name: Load R36S configuration
         run: make r36s_defconfig
         env:

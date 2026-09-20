@@ -59,12 +59,6 @@ jobs:
           LC_ALL: en_US.UTF-8
           LANG: en_US.UTF-8
 
-      - name: Compress Firmware Image
-        run: |
-          if [ -f output/images/sdcard.img ]; then
-            gzip -fk-9 output/images/sdcard.img
-          fi
-
       - name: Upload output firmware image artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -38,8 +38,29 @@ jobs:
           sudo apt-get install -y \
             build-essential libncurses-dev rsync cpio unzip \
             bc file wget git python3 graphviz cvs subversion \
-            bzip2 locales
+            bzip2 locales mtools dosfstools
           sudo locale-gen en_US.UTF-8
+
+      # --- 1. CACHE DOWNLOADS & BUILT HOST TOOLCHAIN ---
+      - name: Cache Buildroot downloads and host tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            dl
+            output/host
+          key: buildroot-${{ runner.os }}-${{ hashFiles('configs/r36s_defconfig') }}
+          restore-keys: |
+            buildroot-${{ runner.os }}-
+
+      # --- 2. OPTIMIZED CCACHE STEP ---
+      - name: Cache Compiler Output (ccache)
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.ref_name }}-
+            ccache-${{ runner.os }}-
 
       - name: Load R36S configuration
         run: make r36s_defconfig
@@ -57,6 +78,12 @@ jobs:
         env:
           LC_ALL: en_US.UTF-8
           LANG: en_US.UTF-8
+
+      - name: Compress Firmware Image
+        run: |
+          if [ -f output/images/sdcard.img ]; then
+            gzip -fk-9 output/images/sdcard.img
+          fi
 
       - name: Upload output firmware image artifacts
         uses: actions/upload-artifact@v4

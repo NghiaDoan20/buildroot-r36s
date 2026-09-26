@@ -3,4 +3,4 @@ bootargs=console=ttyS2,1500000n8 earlycon root=/dev/ram vt.global_cursor_default
 boot_discrete=load mmc 1:1 0x02000000 Image && load mmc 1:1 0x01f00000 rk3326-r36s.dtb && load mmc 1:1 0x10000000 rootfs.cpio.uboot && booti 0x02000000 0x10000000 0x01f00000
 boot_itb=load mmc 1:1 0x10000000 image.itb && bootm 0x10000000
 
-bootcmd=run boot_itb
+bootcmd=run boot_discrete
